@@ -4,7 +4,7 @@ VERSION: 1.9
 DATE CREATED: 3/6/2013 10:07PM
 DATE TESTED:  3/8/2013 10:59PM
 REMARKS: 
-Database integration - Only registered users can access the system. Prevents the users from havong multiple registrations
+Database integration - Only registered users can access the system. Prevents the users from having multiple registrations
 Script is able to read all incoming text messages, return the number of the sender, text back to the sender
 the corresponding keyword response, filter invalid keywords, geocoding and reverse geocoding, admin is able to see the user's
 location in google maps
@@ -143,7 +143,7 @@ while True:
                         conn.commit()
                         SEND("You are now registered", texter)
                     except:
-                        print texter + "tried to register again"
+                        print texter + " tried to register again"
                         SEND("Invalid keyword. You are already registered.", texter)
                         
                         
