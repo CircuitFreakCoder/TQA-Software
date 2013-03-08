@@ -1,13 +1,31 @@
 """
-PROJECT NAME: SMS-BASED GEOCODING & REVERSE GEOCODING SERVER
-VERSION: 1.9
-DATE CREATED: 3/6/2013 10:07PM
-DATE TESTED:  3/8/2013 10:59PM
-REMARKS: 
-Database integration - Only registered users can access the system. Prevents the users from having multiple registrations
-Script is able to read all incoming text messages, return the number of the sender, text back to the sender
-the corresponding keyword response, filter invalid keywords, geocoding and reverse geocoding, admin is able to see the user's
-location in google maps
+
+    PROJECT NAME: SMS-BASED GEOCODING & REVERSE GEOCODING SERVER
+    VERSION 2.0 RELEASE CANDIDATE
+
+
+    Copyright (c) 2013 Jorick A. Caberio and contributors
+
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation
+    files (the "Software"), to deal in the Software without
+    restriction, including without limitation the rights to use,
+    copy, modify, merge, publish, distribute, sublicense, and/or
+    sell copies of the Software, and to permit persons to whom
+    the Software is furnished to do so, subject to the following
+    conditions:
+
+    The above copyright notice and this permission notice shall
+    be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+    DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+
 """
 
 import time, serial, sqlite3
@@ -30,6 +48,7 @@ while True:
     
     def SEND(mssg, sender):
         
+        #Send SMS to the user
         SerialPort.write('AT+CMGF=1\r')
         time.sleep(0.5)
         SerialPort.write('AT+CMGS="'+sender+'"\r\n')
@@ -42,6 +61,7 @@ while True:
         
         #open google earth to view destination
         ge =  win32com.client.Dispatch("GoogleEarth.ApplicationGE")
+        print "Opening Google Earth, please wait... "
         time.sleep(5)
         altitude = 2500
         altMode = 1
@@ -87,10 +107,9 @@ while True:
                     
                     try:
                         address = message[65:-8].replace("\n","")
-                        print address
+                        print "\nInput Location: " + address
                         LAT, LNG = gmaps.address_to_latlng(address)
-                        print LAT
-                        print LNG
+                        print LAT, LNG
                         SEND(address+"\nlat: "+str(LAT)+"\nlng: "+str(LNG), texter)
 
                         GMAP(LAT, LNG)
@@ -116,7 +135,8 @@ while True:
                         lat = float(text.split()[1])
                         lng = float(text.split()[2])
                         
-                        print lat, lng
+                        print  lat
+                        print  lng
                         destination = gmaps.latlng_to_address(lat,lng)
                         print destination
 
@@ -134,7 +154,7 @@ while True:
                 
             else:
                 if text == "INFO":
-                    SEND("To access geocoding and reverse-geocoding services, text REG to this number. For geocoding, text GEO LOCATION to this number. For reverse-geocoding, text REV LAT LNG to this number.", texter)
+                    SEND("To access services, text REG to this number. For geocoding, text GEO LOCATION to this number. For reverse-geocoding, text REV LAT LNG to this number.", texter)
 
                 elif text == "REG":
 
@@ -149,12 +169,13 @@ while True:
                         
 
                 else:
-                    SEND("INVALID KEYWORD", texter)
+                    SEND("Invalid keyword. Text INFO to this number for more details.", texter)
                     
                 
         except:
-            print "NO INCOMING TEXT"
-            print "USERS:"
+            print "NO INCOMING TEXT\n"
+            print "REGISTERED USERS:"
+            print "id | phone number"
             for row in c.execute('SELECT * FROM Users'):
                 print row
         print "---------------------------------------------"
