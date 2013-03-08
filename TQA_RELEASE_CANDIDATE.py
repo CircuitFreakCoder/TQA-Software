@@ -88,7 +88,7 @@ while True:
             texter = message.split(",")[1].replace("+","").replace('"',"")
             print "sender: " + texter
            
-            text = message[61:-8].replace("\n","")
+            text = message[61:-8].replace("\n","").rstrip()
             print "text = " + text
 
             keyword = text.split()[0]
