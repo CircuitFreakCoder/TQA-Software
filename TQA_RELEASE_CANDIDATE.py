@@ -88,10 +88,10 @@ while True:
             texter = message.split(",")[1].replace("+","").replace('"',"")
             print "sender: " + texter
            
-            text = message[61:-8].replace("\n","").rstrip()
+            text = message[61:-8].replace("\n","").rstrip().upper()
             print "text = " + text
 
-            keyword = text.split()[0]
+            keyword = text.split()[0].upper()
             print "keyword = " + keyword
             
             SerialPort.write('AT+CMGD=0\r\n')
