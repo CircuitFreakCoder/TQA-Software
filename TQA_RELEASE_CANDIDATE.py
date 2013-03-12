@@ -6,14 +6,13 @@
 
     Copyright (c) 2013 Jorick A. Caberio and contributors
 
-    Permission is hereby granted, free of charge, to any person
-    obtaining a copy of this software and associated documentation
-    files (the "Software"), to deal in the Software without
-    restriction, including without limitation the rights to use,
-    copy, modify, merge, publish, distribute, sublicense, and/or
-    sell copies of the Software, and to permit persons to whom
-    the Software is furnished to do so, subject to the following
-    conditions:
+    Permission is hereby granted, free of charge, to any person obtaining
+    a copy of this software and associated documentation files (the
+    "Software"), to deal in the Software without restriction,
+    including without limitation the rights to use, copy, modify,
+    merge, publish, distribute, sublicense, and/or sell copies of the
+    Software, and to permit persons to whom the Software is furnished
+    to do so, subject to the following conditions:
 
     The above copyright notice and this permission notice shall
     be included in all copies or substantial portions of the Software.
@@ -28,11 +27,9 @@
 
 """
 
-import time, serial, sqlite3
+import time, serial, sqlite3, traceback
 import win32com.client
-from datetime import datetime 
-from googlemaps import GoogleMaps
-gmaps = GoogleMaps(api_key = 'AIzaSyD4qJM8Ai8dl3hTxvf_CiCimDWbFHdHey8')
+from pygeocoder import Geocoder
 
 conn = sqlite3.connect(':memory:')
 c = conn.cursor()
@@ -91,7 +88,7 @@ while True:
             text = message[61:-8].replace("\n","").rstrip().upper()
             print "text = " + text
 
-            keyword = text.split()[0].upper()
+            keyword = text.split()[0]
             print "keyword = " + keyword
             
             SerialPort.write('AT+CMGD=0\r\n')
@@ -107,19 +104,20 @@ while True:
                     
                     try:
                         address = message[65:-8].replace("\n","")
-                        print "\nInput Location: " + address
-                        LAT, LNG = gmaps.address_to_latlng(address)
+                        print "Input Location: " + address
+                        result = Geocoder.geocode(address)
+                        LAT, LNG = result[0].coordinates
                         print LAT, LNG
-                        SEND(address+"\nlat: "+str(LAT)+"\nlng: "+str(LNG), texter)
+                        SEND(address+"\nlatitude: "+str(LAT)+"\nlongitude: "+str(LNG), texter)
 
                         GMAP(LAT, LNG)
                         
                     except:
-                        SEND("Invalid address", texter)
+                        SEND("Invalid address.", texter)
                  
                 else:
                     print texter+" is NOT registered"
-                    SEND("You are not registered",texter)
+                    SEND("You are not registered.",texter)
 
                    
                         
@@ -134,23 +132,23 @@ while True:
                     try:
                         lat = float(text.split()[1])
                         lng = float(text.split()[2])
-                        
+                      
                         print  lat
                         print  lng
-                        destination = gmaps.latlng_to_address(lat,lng)
+                        destination = Geocoder.reverse_geocode(lat,lng)
                         print destination
-
-                        SEND(destination, texter)
+                        
+                        SEND(str(destination[0]), texter)
 
                         GMAP(lat,lng)
-
+                        
                         
                     except:
-                        SEND("Invalid latitude or longitude", texter)
+                        SEND("Invalid latitude or longitude.", texter)
 
                 else:
                     print texter+" is NOT registered"
-                    SEND("You are not registered",texter)
+                    SEND("You are not registered.",texter)
                 
             else:
                 if text == "INFO":
@@ -161,7 +159,7 @@ while True:
                     try: 
                         c.execute("INSERT INTO Users (number) VALUES ("+texter+")")
                         conn.commit()
-                        SEND("You are now registered", texter)
+                        SEND("You are now registered.", texter)
                     except:
                         print texter + " tried to register again"
                         SEND("Invalid keyword. You are already registered.", texter)
@@ -178,6 +176,6 @@ while True:
             print "id | phone number"
             for row in c.execute('SELECT * FROM Users'):
                 print row
-        print "---------------------------------------------"
+        print "--------------------------------------"
         time.sleep(1)
         
